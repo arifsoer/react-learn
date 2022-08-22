@@ -1,0 +1,24 @@
+.Seach-box {
+  margin: 0 200px;
+}
+
+label, input {
+  margin-right: 8px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid white;
+}
+
+table {
+  width: 100%;
+  margin: 20px 50px;
+  border-collapse: collapse;
+}
+
+.Radio-group {
+  margin: 15px 10px;
+  display: flex;
+  justify-content: center;
+}

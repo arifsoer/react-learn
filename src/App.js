@@ -1,134 +1,45 @@
 import { useState } from "react";
-import axios from "./axios";
-import moment from "moment";
 
 import "./App.css";
 
-const API_KEY = "27b2eec7550ffca976e7c9763e3d17de";
+import WeatherApp from './components/WeatherApp/MainApp'
 
 function App() {
-  const [datas, setDatas] = useState([]);
-  const [inputCity, setInputCity] = useState("");
-
-  const [cityOption, setCityOption] = useState([]);
-  const [selectedCity, setSelectedCity] = useState({});
-
-  const getTheCityOptions = async () => {
-    try {
-      const coordinate = await axios.get(
-        `/geo/1.0/direct?q=${inputCity}&limit=5&appid=${API_KEY}`
-      );
-      const mapedCityOption = coordinate.data.map((dt) => {
-        return {
-          ...dt,
-          name: `${dt.name}, ${dt.state}`,
-        };
-      });
-      setCityOption(mapedCityOption);
-      setSelectedCity(mapedCityOption[0]);
-      getWeatherData(mapedCityOption[0]);
-    } catch (error) {
-      console.log(error);
+  const [selectedMenu, setSelectedMenu] = useState(3);
+  const menus = [
+    {name: 'Content 1', content: <WeatherApp />},
+    {name: 'Content 2', content: <h1>Content 2</h1>},
+  ];
+  const getContent = () => {
+    if(!menus[selectedMenu]){
+      return <h2>Contenet not found</h2>
     }
+    return menus[selectedMenu].content
   };
-
-  const citySelectHandler = (event) => {
-    try {
-      setSelectedCity(cityOption[event.target.value]);
-      getWeatherData(cityOption[event.target.value]);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getWeatherData = async (city) => {
-    try {
-      const weatherResponse = await axios.get(
-        `/data/2.5/forecast?lat=${city.lat}&lon=${city.lon}&appid=${API_KEY}`
-      );
-      const weatherData = weatherResponse.data.list.map((wd) => {
-        const mt = moment.unix(wd.dt);
-        return {
-          city: city.name,
-          description: wd.weather.length <= 0 ? "" : wd.weather[0].description,
-          date: mt.calendar() + ` (${mt.format("MMMM DD, YYYY")})`,
-        };
-      });
-      setDatas(weatherData);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const setDataHandler = async () => {
-    try {
-      // we need to find coordinate
-      const coordinate = await axios.get(
-        `/geo/1.0/direct?q=${inputCity}&limit=5&appid=${API_KEY}`
-      );
-      const cityData = coordinate.data[0];
-      const weatherResponse = await axios.get(
-        `/data/2.5/forecast?lat=${cityData.lat}&lon=${cityData.lon}&appid=${API_KEY}`
-      );
-      const weatherData = weatherResponse.data.list.map((wd) => {
-        return {
-          city: cityData.name,
-          description: wd.weather.length <= 0 ? "" : wd.weather[0].description,
-          date: moment.unix(wd.dt).format("MMMM DD, YYYY"),
-        };
-      });
-      setDatas(weatherData);
-    } catch (error) {
-      console.log(error);
-    }
+  const menuChangeHandler = (event) => {
+    setSelectedMenu(parseInt(event.target.value))
   };
 
   return (
     <div className="App">
-      <h1>Weather Description</h1>
-      <div className="Seach-box">
-        <label>City :</label>
-        <input
-          type="text"
-          value={inputCity}
-          onChange={(value) => {
-            setInputCity(value.target.value);
-          }}
-        />
-        <button onClick={getTheCityOptions}>Search</button>
-      </div>
-      <div className="Radio-group">
-        {cityOption.map((co, ind) => (
-          <div key={ind + "op"}>
+      <h1>Main Menu</h1>
+      <div>
+        {menus.map((menu, ind) => (
+          <div key={ind} className="form-check form-check-inline">
             <input
+              className="form-check-input"
               type="radio"
-              name={Math.random()+ind}
-              checked={cityOption.indexOf(selectedCity) === ind}
-              onChange={citySelectHandler}
+              name="page"
+              id={'inlineCheckbox'+ind}
               value={ind}
+              checked={selectedMenu === ind}
+              onChange={menuChangeHandler}
             />
-            <label>{co.name}</label>
+            <label className="form-check-label" htmlFor={'inlineCheckbox'+ind}>{menu.name}</label>
           </div>
         ))}
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>City</th>
-            <th>Description</th>
-            <th>Date Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {datas.map((dt, index) => (
-            <tr key={index + "tr"}>
-              <td>{dt.city}</td>
-              <td>{dt.description}</td>
-              <td>{dt.date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="container-fluid">{getContent()}</div>
     </div>
   );
 }
